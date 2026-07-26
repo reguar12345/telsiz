@@ -1,0 +1,46 @@
+name: Build
+
+# Telsiz'i derleyip hazır .jar üretir.
+# Actions sekmesinden "Run workflow" deyip, biten çalışmanın altındaki
+# "Artifacts" bölümünden telsiz-jar dosyasını indirebilirsiniz.
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ForgeGradle 2.3 SADECE Java 8 ile çalışır.
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      # ForgeGradle 2.3, Gradle 5+ ile uyumsuz. 4.4.1'e sabitliyoruz.
+      - name: Set up Gradle 4.4.1
+        run: |
+          curl -sSLo gradle.zip https://services.gradle.org/distributions/gradle-4.4.1-bin.zip
+          unzip -q gradle.zip -d "$HOME"
+          echo "$HOME/gradle-4.4.1/bin" >> "$GITHUB_PATH"
+
+      - name: Gradle version
+        run: gradle --version
+
+      - name: Build
+        run: gradle build --no-daemon --stacktrace
+
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: telsiz-jar
+          path: build/libs/*.jar
+          if-no-files-found: error
