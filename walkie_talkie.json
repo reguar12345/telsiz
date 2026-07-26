@@ -1,0 +1,66 @@
+package com.telsiz;
+
+import net.minecraftforge.common.config.Config;
+import net.minecraftforge.common.config.ConfigManager;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+
+/**
+ * Config file: config/telsiz.cfg
+ */
+@Config(modid = Telsiz.MOD_ID, name = Telsiz.MOD_ID)
+public class TelsizConfig {
+
+    @Config.Comment("How many channels a walkie-talkie can cycle through (1 .. maxChannels).")
+    @Config.RangeInt(min = 1, max = 999)
+    public static int maxChannels = 8;
+
+    @Config.Comment("If true, the walkie-talkie only works while held in the main or off hand. "
+            + "If false, any switched-on walkie-talkie anywhere in the inventory works.")
+    public static boolean requireInHand = true;
+
+    @Config.Comment("If true, speaking into the radio removes your voice from normal proximity chat, "
+            + "so people standing next to you only hear you through their own radio.")
+    public static boolean cancelProximity = false;
+
+    @Config.Comment("If true, radio transmissions also work between different dimensions.")
+    public static boolean crossDimension = true;
+
+    @Config.Comment("Maximum radio range in blocks. Use -1 for unlimited range. "
+            + "Any value above 0 also forces sender and receiver into the same dimension.")
+    @Config.RangeDouble(min = -1.0D, max = 1.0E7D)
+    public static double maxDistance = -1.0D;
+
+    @Config.Comment("How often (in ticks) the server re-scans who is holding an active radio. "
+            + "Lower = more responsive, higher = cheaper.")
+    @Config.RangeInt(min = 1, max = 100)
+    public static int scanIntervalTicks = 2;
+
+    @Config.Comment("If true, radio audio is also delivered to players who are inside an isolated "
+            + "Simple Voice Chat group.")
+    public static boolean bypassGroupIsolation = true;
+
+    @Config.Comment("Milliseconds of silence after which a transmission is considered finished "
+            + "and its audio channel is flushed.")
+    @Config.RangeInt(min = 100, max = 10000)
+    public static int transmissionTimeoutMs = 600;
+
+    @Config.Comment("Play a click sound when toggling power or changing channel.")
+    public static boolean playClickSound = true;
+
+    /**
+     * Only relevant on the client: ConfigChangedEvent is fired by the in-game config GUI.
+     * Dedicated servers read config/telsiz.cfg on startup.
+     */
+    @Mod.EventBusSubscriber(modid = Telsiz.MOD_ID, value = Side.CLIENT)
+    private static class ConfigSyncHandler {
+        @SubscribeEvent
+        public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+            if (Telsiz.MOD_ID.equals(event.getModID())) {
+                ConfigManager.sync(Telsiz.MOD_ID, Config.Type.INSTANCE);
+            }
+        }
+    }
+}
